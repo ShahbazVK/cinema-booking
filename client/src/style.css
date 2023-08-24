@@ -1,0 +1,11 @@
+*{
+  margin: 0;
+  padding: 0;
+}
+html, body {
+  overflow-x: hidden;
+  /* background-image: url("./assets/movies.jpg"); */
+  background-color: rgb(27, 27, 27);
+  color: white;
+
+}
