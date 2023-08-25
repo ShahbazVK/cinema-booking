@@ -4,7 +4,7 @@
         <div class="scroll-container" ref="scrollContainer">
             <button class="arrow-button" @click="scrollLeft" style="position: absolute;top: 130px;left: 0px;">&lt;</button>
             <div class="movie-card" v-for="(movie,key) in currentMoviesData" :key="key">
-                <img style="cursor: pointer;" @click="this.$router.push(`/movie/booking/${movie.id}`)" class="movie-img" width="300" height="200" :src="movie.img" :alt="movie.name">
+                <img style="cursor: pointer;" @click="this.$router.push(`/movie/booking/${movie.name}`)" class="movie-img" width="300" height="200" :src="movie.img" :alt="movie.name">
             </div>
             <button class="arrow-button" @click="scrollRight" style="position: absolute;top: 130px;right: 0px;">&gt;</button>
         </div>

@@ -6,10 +6,10 @@
                     <p>MULTIPLEX SCREEN</p>
                 </div>
                 <div>
-                    <div class="row-seats" v-for="(seatsOfIndividualRow,key1) in allSeatsComputed" :key="key1">
+                    <div class="row-seats" v-for="(seatsOfIndividualRow,key1) in this.seats" :key="key1">
                         <p v-if="key1===1"><br><br><br></p>
                         <p class="row-number">{{ key1+1 }}</p>
-                        <p :class="`single-seat ${seat===0 && 'sold'} ${seat===1 && 'available'} ${seat===2 && 'selected'}`" @click="seatClicked(key1,key2)" v-for="(seat,key2) in seatsOfIndividualRow" :key="key2">{{ key2+1 }}</p>
+                        <p :class="`single-seat ${seat===this.userId && 'bought-by-me'} ${seat!==1 && seat!==2 && 'sold'} ${seat===1 && 'available'} ${seat===2 && 'selected'}`" @click="seatClicked(key1,key2)" v-for="(seat,key2) in seatsOfIndividualRow" :key="key2">{{ key2+1 }}</p>
                     </div>
                 </div>
             </div>
@@ -23,7 +23,7 @@
                     </tr>
                     <tr>
                         <td class="detail-label">Time</td>
-                        <td class="detail-dynamic">: {{ this.currentMovie.date }}</td>
+                        <td class="detail-dynamic">: 21 Dec 2023, 09:00 P.M.</td>
                     </tr>
                     <tr>
                         <td class="detail-label">Per Ticket</td>
@@ -44,7 +44,7 @@
                 <p><span class="detail-label">Total</span> <span class="detail-dynamic">:50$</span></p> -->
                 <br>
                 <div>
-                    <button class="book-button">Book Now!</button>
+                    <button @click="bookTickets" class="book-button">Book Now!</button>
                 </div>
                 <div style="margin-top: 2rem;">
                     <div style="display: flex;">
@@ -59,6 +59,10 @@
                         <div class="seat-description selected"></div>
                         <p>Selected</p>
                     </div>
+                    <div style="display: flex;">
+                        <div class="seat-description bought-by-me"></div>
+                        <p>Previously booked by me</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -70,13 +74,13 @@ export default {
     data(){
         return{
             seats:[],
-            // seats:[[1,0,1,1,1,1,0,1,0,0],[1,0,1,1,0,1,0,0,0,0],[1,0,1,1,1,1,0,1,0,0],[1,0,1,1,1,1,0,1,0,0],[1,0,1,1,1,0,0,1,0,0],[0,0,1,1,1,1,0,1,0,0],[1,0,1,1,1,1,0,1,0,0],[1,0,1,0,1,1,0,1,0,0],[1,0,1,1,1,1,0,1,0,0],[1,0,1,0,1,1,0,1,1,0]],
             selected:[],
             selectedCount:0,
             publicBookingStatus:publicBookingStatus,
             currentMovie:{},
-            // sold:[[3,4],[10],[5,10],[1,10],[1],[7,8,9],[3,10],[1,6,7,8],[9],[2]],
-            // available:[[1,2,5,6,7,8,9,10],[1,2,3,4,5,6,7,8,9],[1,2,3,4,6,7,8,9],[2,3,4,5,6,7,8,9],[2,3,4,5,6,10],[1,2,4,5,6,7,8,9],[2,3,4,5,9,10],[1,2,3,4,5,6,7,8,10],[1,2,3,4,5,6,7,8,9,10],[1,3,4,5,6,7,8,9,10]],
+            allBookedMovies:[],
+            previouslyBookedSeats:[],
+            userId:localStorage.getItem("userId")
         }
     },
     methods:{
@@ -91,32 +95,33 @@ export default {
                 this.selected[row][col]=userBookingStatus.unselected
                 this.selectedCount-=1
             }
+        },
+        async bookTickets(){
+            for (let i = 0; i < this.seats.length; i++) {
+                for (let j = 0; j < 10; j++) {
+                    if (this.seats[i][j] && (this.seats[i][j] === 2)){
+                        this.seats[i][j] = localStorage.getItem("userId")
+                    }
+                }                
+            }
+            await this.$store.dispatch("bookSeats",{movie:this.$route.params.name,seats:this.seats})
         }
     },
     computed:{
-        allSeatsComputed() {
-            const rows = 9;
-            const columns = 10;
-            // const seats = [];
-
-            for (let i = 0; i < rows; i++) {
-                const row = [];
-                for (let j = 0; j < columns; j++) {
-                    const randomDigit = Math.floor(Math.random() * 2); // Generates either 0 or 1
-                    row.push(randomDigit);
-                }
-                this.seats.push(row);
-                this.selected.push([])
-            }
-            this.seats.push([1,0,0,1,0,1])
-            return this.seats;
-        },
     },
     async mounted(){
-        // console.log(await this.$store.getters.getCurrentMoviesData);
-        this.currentMovie= await this.$store.getters.getCurrentMoviesData
-        if (this.currentMovie===undefined) this.$router.push('/movies')
-        else this.currentMovie=this.currentMovie.filter(movie=>movie.id===parseInt(this.$route.params.id))[0]
+        this.currentMovie = await this.$store.dispatch("specificMovieInfo",this.$route.params.name)
+        // this.allBookedMovies = await this.$store.dispatch("specificMovieSeats",this.$route.params.name)
+        // for (let index = 0; index < this.allBookedMovies.length; index++) {
+        //     if (this.allBookedMovies[index][0]===this.$route.params.name){
+        //         this.previouslyBookedSeats = this.allBookedMovies[index]
+        //         console.log(this.previouslyBookedSeats)
+        //     }
+        // }
+        this.seats= this.currentMovie.seats
+        for (let index = 0; index < this.seats.length; index++) {
+            this.selected.push([])
+        }
     }
 }
 </script>
@@ -201,5 +206,8 @@ table tr td{
 }
 .selected{
     background-color:#6fff02;
+}
+.bought-by-me{
+    background-color:#853e9b;
 }
 </style>

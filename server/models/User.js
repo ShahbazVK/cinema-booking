@@ -10,6 +10,7 @@ const UserSchema = new mongoose.Schema({
     email: {
         type: String,
         required: true,
+        unique: true,
     },
     password: {
         type: String,
@@ -30,7 +31,11 @@ UserSchema.methods.comparePassword = async function (candidatePassword) {
 }
 
 UserSchema.methods.createJWT = async function (userId) {
-    const token = jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_LIFETIME })
+    const token = jwt.sign({
+        userId
+    }, process.env.JWT_SECRET, {
+        expiresIn: process.env.JWT_LIFETIME
+    })
     return token
 }
 

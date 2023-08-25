@@ -1,16 +1,20 @@
-import { createRouter, createWebHistory } from 'vue-router';
-import HelloWorld from '../components/TheLogin.vue'
+import {
+    createRouter,
+    createWebHistory
+} from 'vue-router';
 import TheBooking from '../pages/TheBooking.vue'
 import TheMovies from '../pages/TheMovies.vue'
+import LoginRegisterPage from '../pages/LoginRegisterPage.vue'
 
-const routes = [
-    {
+const token = localStorage.getItem("token")
+
+const routes = [{
         path: '/',
         name: 'Home',
-        component: HelloWorld,
+        component: LoginRegisterPage,
     },
     {
-        path: '/movie/booking/:id',
+        path: '/movie/booking/:name',
         name: 'TheBooking',
         component: TheBooking,
     },
@@ -26,4 +30,11 @@ const router = createRouter({
     routes,
 });
 
+
+// router.beforeEach((to, from, next) => {
+//     if (to.name !== 'Home' && !token) next({
+//         name: 'Home'
+//     })
+//     else next()
+// })
 export default router;
